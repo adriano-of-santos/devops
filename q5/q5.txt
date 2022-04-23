@@ -1,0 +1,3 @@
+Aqui poderia ser empregado o recurso de autoscaling, dessa forma ambos os projetos 
+poderiam consumir recursos minimos e de acordo com o aumento da demanda um novo container seria automaticamente escalado.
+Adicionalmente poderia ser utilizado um balanceador de carga para distribuir os acessos entre os containers.

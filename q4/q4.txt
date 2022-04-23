@@ -1,0 +1,3 @@
+É um processo de desenvolvimento e distribuição de versoes e testes automatizados, 
+aonde atraves de gatilhos são reservados e aplicados recursos computacionais, aplicações e o produto para deploy.
+Isso é possivel atraves de codificação com versionamento, ferramentas para gestao de builds e para deploy em containers.

@@ -1,0 +1,78 @@
+---
+- hosts: ansible_host
+  connection: local
+  become: true
+  gather_facts: false
+
+  vars:
+    add_users:
+    - username: "adriano"
+    - username: "silvana"
+    - username: "ruby"
+    - username: "vagrant"
+
+  tasks:
+  - name: 'A1 Generate SSH keys'
+    command: "ssh-keygen -q -t rsa -N '' -C '' -f files/id_rsa_{{ item.username }}"
+    args:
+      creates: "files/id_rsa_{{ item.username }}"
+    with_items: "{{ add_users }}"
+
+- hosts: server1
+  become: true
+  gather_facts: false
+
+  vars:
+    add_users:
+    - username: "adriano"
+      groups: "admin"
+    - username: "silvana"
+      groups: "admin"
+    - username: "ruby"
+      groups: "admin"
+    - username: "vagrant"
+      groups: "admin"
+    rmv_users:
+    - username: "ruby"
+
+  handlers:
+  - name: "Restart sshd"
+    service:
+      name: "sshd"
+      state: "restarted"
+
+  tasks:
+  - name: 'B1 Create group admin'
+    group:
+      name: admin
+      state: present
+
+  - name: 'B2 Add users'
+    user:
+      name: "{{ item.username }}"
+      groups: "{{ item.groups }}"
+      state: "present"
+      append: true
+      create_home: true
+      shell: /bin/bash
+    with_items: "{{ add_users }}"
+
+  - name: 'B3 Add pub keys'
+    authorized_key:
+      user: "{{ item.username }}"
+      key: "{{ lookup('file', 'files/id_rsa_'+ item.username + '.pub') }}"
+    with_items: "{{ add_users }}"
+
+  - name: "B4 Remove old users"
+    user:
+      name: "{{ item.username }}"
+      state: "absent"
+    with_items: "{{ rmv_users }}"
+
+  - name: "B5 Allow sudo without password"
+    lineinfile:
+      dest: "/etc/sudoers"
+      state: "present"
+      regexp: "^%admin"
+      line: "%admin ALL=(ALL) NOPASSWD: ALL"
+      validate: '/usr/sbin/visudo -cf %s'
