@@ -1,0 +1,20 @@
+$script_timed = <<-SCRIPT
+   timedatectl set-timezone America/Sao_Paulo
+SCRIPT
+
+Vagrant.configure("2") do |config|
+   config.vm.box = "hashicorp/bionic64"
+
+    config.vm.define "docker" do |docker|
+        docker.vm.network "public_network", ip: "192.168.0.191" # setup lan network public static
+        docker.vm.provision "shell", inline: $script_timed
+        docker.vm.provision "shell", inline: "hostnamectl set-hostname 'docker'"
+        docker.vm.provision "shell", inline: "apt-get update && \
+                                              apt-get install -y docker.io bash-completion && \
+                                              usermod -aG docker $USER && \
+                                              curl -L 'https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)' -o /usr/local/bin/docker-compose && \
+                                              chmod +x /usr/local/bin/docker-compose && \
+                                              ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+                                              systemctl enable docker"
+    end
+end
