@@ -1,0 +1,19 @@
+ARG IMG_VERSION
+FROM ubuntu:${IMG_VERSION:-latest}
+LABEL org.opencontainers.image.authors="adriano.of.santos@gmail.com"
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
+    curl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/* /tmp/* /var/tmp/* \
+    && useradd -rms /bin/bash devops \
+    && mkdir /home/devops/src
+WORKDIR /home/devops/src
+COPY script.sh /home/devops/src/
+RUN chmod +x script.sh
+ENTRYPOINT ["./script.sh"]
+USER devops
+
+#docker build . -t app1804 --build-arg IMG_VERSION=18.04
+#docker run it --name app app1804
